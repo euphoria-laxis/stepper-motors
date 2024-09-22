@@ -121,6 +121,24 @@ func main () {
 
 This will rotate the motor forward (clockwise) to 180° at 40% speed.
 
+### Examples
+
+You can check the examples in [examples folder](./examples). To run the examples you will
+have to connect the stepper motors to your raspberry pi as following :
+
+![Raspberry pi stepper motors sketch](./medias/sketch.png "Raspberry pi stepper motors sketch")
+
+You will need to ruin the binary with **root privileges** to access the GPIOs. To build the
+examples and run them just use :
+
+````bash
+mkdir build
+go build -o build/two_steppers examples/two_steppers/two_steppers.go
+./build/two_steppers # don't forget to run this with root privileges.
+````
+
+This should move the 2 stepper motors at 270°.
+
 ## Contribution
 
 This library is maintained by [Euphoria Laxis](https://github.com/euphoria-laxis).
