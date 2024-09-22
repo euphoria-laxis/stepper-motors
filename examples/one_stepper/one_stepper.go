@@ -59,7 +59,15 @@ func main() {
 	fmt.Print(banner) // Display a banner when running program
 
 	// go-rpio initialization
-	if err := rpio.Open(); err != nil {
+	err := rpio.Open()
+	defer func() {
+		err = rpio.Close()
+		if err != nil {
+			slog.Error("Closing go-rpio failed, you should turn the GPIO off yourself or restart your raspberry pi")
+			os.Exit(1)
+		}
+	}()
+	if err != nil {
 		slog.Error("rpio.Open() failed")
 		os.Exit(1)
 	}
@@ -94,12 +102,6 @@ func main() {
 		runStepperMotor(sm, &smParams)
 	}()
 	wg.Wait()
-
-	// Close GPIOs
-	err := rpio.Close()
-	if err != nil {
-		slog.Error("rpio.Close() failed")
-	}
 }
 
 // params contains the required information to run the stepper motor
