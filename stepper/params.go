@@ -13,6 +13,11 @@ func (d Direction) Int() int {
 	return int(d)
 }
 
+// Float64 return value as float64
+func (d Direction) Float64() float64 {
+	return float64(d)
+}
+
 // Speed is the stepper motor speed, it ensures to use only allowed speed values
 type Speed uint8
 
