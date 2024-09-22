@@ -51,7 +51,8 @@ Stepper In 4	->		|  22 | GPIO. 3 |   IN | 0 | 15 || 16 | 0 | IN   | GPIO. 4 | 23
 var smgpios = [4]int{17, 18, 27, 22}
 var sm *StepperMotor
 
-func TestStepperMotor(t *testing.T) {
+func TestStepper(t *testing.T) {
+	t.Log("stepper/stepper.go tests")
 	// go-rpio initialization
 	if err := rpio.Open(); err != nil {
 		t.Error("rpio.Open() failed")
@@ -60,7 +61,12 @@ func TestStepperMotor(t *testing.T) {
 	t.Run("Test StepperMotor constructor", testNewStepperMotor())
 	t.Run("Test StepperMotor getters", testStepperMotorGetters(sm))
 	t.Run("Test StepperMotor getters", testStepperMotorGetters(sm))
-	t.Run("Test StepperMotor run", testStepperMotorRun(sm))
+	var p params
+	p.speed = Speed100
+	p.direction = DirectionClock
+	p.angle = 90
+	p.threshold = 45
+	t.Run("Test StepperMotor run", testStepperMotorRun(sm, &p))
 }
 
 func testNewStepperMotor() func(t *testing.T) {
@@ -68,7 +74,6 @@ func testNewStepperMotor() func(t *testing.T) {
 		sm = NewStepperMotor(SetGPIOs(smgpios))
 		if sm == nil {
 			t.Error("NewStepperMotor() returned nil")
-			t.Fail()
 		}
 	}
 }
@@ -77,38 +82,64 @@ func testStepperMotorGetters(sm *StepperMotor) func(t *testing.T) {
 	return func(t *testing.T) {
 		if sm.IsRunning() {
 			t.Error("StepperMotor() should not be running")
-			t.Fail()
 		}
 		if sm.GetCurrentPosition() != 0 {
 			t.Error("StepperMotor() current position should be 0")
-			t.Fail()
 		}
 		if sm.GetNumOfSteps() != 0 {
 			t.Error("StepperMotor() num of steps should be 0")
-			t.Fail()
 		}
 		if sm.GetThreshold() != 0 {
 			t.Error("StepperMotor() threshold should be 0")
-			t.Fail()
 		}
 	}
 }
 
-func testStepperMotorRun(sm *StepperMotor) func(t *testing.T) {
+type params struct {
+	speed     Speed
+	direction Direction
+	angle     uint
+	threshold uint
+}
+
+// testStepperMotorRun test if the stepper motor runs correctly
+func testStepperMotorRun(sm *StepperMotor, p *params) func(t *testing.T) {
 	return func(t *testing.T) {
+		// Set threshold
+		sm.SetThreshold(p.threshold)
 		// Run stepper motor in a routine
 		var wg sync.WaitGroup
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			sm.Run(DirectionClock, 180, Speed40)
+			sm.Run(p.direction, p.angle, p.speed)
 		}()
-		Wait(200 * time.Millisecond)
+		steps := GetSteps(p.angle)
+		stepDuration := uint((5 * 100 / p.speed.Float64()) * 1000) // equal to 5ms for 100% speed
+		wait := time.Duration((steps/2)*stepDuration) * time.Microsecond
+		Wait(wait) // wait until half of the routine execution time
 		if !sm.IsRunning() {
-			t.Error("StepperMotor() should be running")
-			t.Fail()
+			t.Error("StepperMotor should be running")
 		}
-		Wait(2 * time.Second)
+		if sm.GetNumOfSteps() <= 0 || sm.GetNumOfSteps() >= steps {
+			t.Errorf("StepperMotor invalid num of steps : %d", steps)
+		}
+		if sm.GetCurrentPosition() == 0 || uint(sm.GetCurrentPosition()) > p.angle {
+			t.Error("StepperMotor current position shouldn't be 0")
+		}
+		if sm.GetThreshold() != p.threshold {
+			t.Errorf("StepperMotor threshold should be %d", p.threshold)
+		}
 		wg.Wait() // wait for routine to be done
+		cleanup()
+	}
+}
+
+// cleanup set pins to LOW to prevent stepper motor overheating
+func cleanup() {
+	for _, gpio := range smgpios {
+		pin := rpio.Pin(gpio)
+		pin.Output()
+		pin.Low()
 	}
 }
