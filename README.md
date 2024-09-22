@@ -1,6 +1,6 @@
 # stepper-motors
 
-Golang librairy to use stepper motors on a Raspberry Pi using wiringPi library biding
+Golang  stepper motor library for Raspberry Pi.
 
 ## Installation
 
