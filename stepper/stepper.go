@@ -87,7 +87,7 @@ func (s *StepperMotor) Run(direction Direction, angle uint, speed Speed) {
 	}
 	// Run the sequence
 	for i = 0; i < steps; i++ {
-		// Stop stepper motor if current position is greater than threeshold
+		// Stop stepper motor if current position is greater than threshold
 		if s.threshold != 0 && math.Abs(float64(s.currentPos)) >= float64(s.threshold) {
 			break
 		}
@@ -96,9 +96,10 @@ func (s *StepperMotor) Run(direction Direction, angle uint, speed Speed) {
 			count = 0
 		}
 		// Update state
-		s.nSteps = steps - i
+		s.nSteps = steps - (i + 1)
 		if s.nSteps > 0 {
-			s.currentPos = direction.Int() * (int(degrees / s.nSteps))
+			currentAngle := ((float64(steps) - float64(s.nSteps)) / float64(steps)) * float64(degrees)
+			s.currentPos = direction.Int() * int(currentAngle)
 		} else {
 			s.currentPos = 0
 		}
