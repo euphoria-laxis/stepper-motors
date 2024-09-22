@@ -87,6 +87,10 @@ func (s *StepperMotor) Run(direction Direction, angle uint, speed Speed) {
 	}
 	// Run the sequence
 	for i = 0; i < steps; i++ {
+		// Stop stepper motor if current position is greater than threeshold
+		if s.threshold != 0 && math.Abs(float64(s.currentPos)) >= float64(s.threshold) {
+			break
+		}
 		// Reset count if it's greater than sequence length
 		if int(count) >= len(s.sequence) {
 			count = 0
