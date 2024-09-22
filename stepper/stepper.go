@@ -91,6 +91,13 @@ func (s *StepperMotor) Run(direction Direction, angle uint, speed Speed) {
 		if int(count) >= len(s.sequence) {
 			count = 0
 		}
+		// Update state
+		s.nSteps = steps - i
+		if s.nSteps > 0 {
+			s.currentPos = direction.Int() * (int(degrees / s.nSteps))
+		} else {
+			s.currentPos = 0
+		}
 		// Set GPIOs value according to sequence
 		for j, pin := range pins {
 			if s.sequence[count][j] == 1 {
@@ -111,8 +118,6 @@ func (s *StepperMotor) Run(direction Direction, angle uint, speed Speed) {
 		s.sequence = Sequence28BYJ48
 	}
 	// Update the state
-	s.nSteps += steps
-	s.currentPos += direction.Int() * int(degrees)
 	s.running = false
 }
 
