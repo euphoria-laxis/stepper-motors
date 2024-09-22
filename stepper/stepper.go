@@ -75,7 +75,7 @@ func (s *StepperMotor) Run(direction Direction, angle uint, speed Speed) {
 	steps := GetSteps(degrees)
 	// To go counterclockwise we need to reverse the switching sequence
 	if direction == DirectionCounterClock {
-		s.sequence = reverse(s.sequence)
+		s.sequence = reverseSequence(s.sequence)
 	}
 	var i, count uint
 	count = 0
