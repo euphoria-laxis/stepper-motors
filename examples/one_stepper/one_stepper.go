@@ -41,7 +41,7 @@ stepper 1 in 4	->		|  22 | GPIO. 3 |   IN | 0 | 15 || 16 | 0 | IN   | GPIO. 4 | 
 */
 
 const banner = `
-> Example: 		Running stepper motor
+> Example: 		One stepper motor
 > Author: 		Euphoria Laxis
 > Version:		v0.1.0
 > Repository: 	https://github.com/euphoria-laxis/stepper-motors.git
